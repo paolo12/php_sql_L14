@@ -1,5 +1,5 @@
 <?php
-$pdo = new PDO('mysql:host=localhost:3306;dbname=global', 'root', 'qwerty');
+$pdo = new PDO('mysql:host=localhost;dbname=global', 'root', 'qwerty');
 date_default_timezone_set('Europe/Moscow');
 $time = date("Y-m-d H:m:s");
 
@@ -66,21 +66,21 @@ function getTable($row){
 </div>
 
 <div style="float: left; margin-left: 20px;">
-    <form method="POST">
+    <form method="GET">
         <label for="sort">Сортировать по:</label>
         <select name="sort_by">
 			<?php
-				if(empty($_POST['sort_by']) or $_POST['sort_by'] == 'date_created'){
+				if(empty($_GET['sort_by']) or $_GET['sort_by'] == 'date_created'){
 					echo '<option selected value="date_created">Дате добавления</option>
 					<option value="is_done">Статусу</option>
 					<option value="description">Описанию</option>';
 				}
-				else if($_POST['sort_by'] == 'is_done'){
+				else if($_GET['sort_by'] == 'is_done'){
 					echo'<option value="date_created">Дате добавления</option>
 					<option selected value="is_done">Статусу</option>
 					<option value="description">Описанию</option>';
 				}
-				else if($_POST['sort_by'] == 'description'){
+				else if($_GET['sort_by'] == 'description'){
 					echo '<option value="date_created">Дате добавления</option>
 					<option value="is_done">Статусу</option>
 					<option selected value="description">Описанию</option>';
@@ -133,14 +133,14 @@ if(!empty($_POST['description'])){
         <th></th>
     </tr>
 <?php
-if(!empty($_POST['sort_by'])){
-	if($_POST['sort_by'] == 'date_created'){
+if(!empty($_GET['sort_by'])){
+	if($_GET['sort_by'] == 'date_created'){
 		$sql = 'SELECT * FROM tasks ORDER BY date_added';
 	}
-	else if($_POST['sort_by'] == 'description'){
+	else if($_GET['sort_by'] == 'description'){
 		$sql = 'SELECT * FROM tasks ORDER BY description';
 	}
-	else if($_POST['sort_by'] == 'is_done'){
+	else if($_GET['sort_by'] == 'is_done'){
 		$sql = 'SELECT * FROM tasks ORDER BY is_done';
 	}
 	
