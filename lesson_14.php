@@ -1,5 +1,5 @@
 <?php
-$pdo = new PDO('mysql:host=localhost;dbname=global', 'root', 'qwerty');
+$pdo = new PDO('mysql:host=localhost;dbname=global;charset=UTF8', 'root', 'qwerty');
 date_default_timezone_set('Europe/Moscow');
 $time = date("Y-m-d H:m:s");
 
