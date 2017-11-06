@@ -7,19 +7,10 @@ if(empty($_GET['action'])){
 	
 }
 else if($_GET['action'] == 'delete'){
-	$pdo->query('DELETE FROM tasks WHERE id='.'"'.$_GET['id'].'"');
+	$pdo->query('DELETE FROM tasks WHERE id='.'"'.strip_tags($_GET['id']).'"');
 }
 else if($_GET['action'] == 'done'){
-	$pdo->query('UPDATE tasks SET is_done="1" WHERE id='.'"'.$_GET['id'].'"');
-}
-if(empty($POST) or $POST['sort_by'] = 'date_created'){
-	$sql_full = 'SELECT id, description, is_done, date_added FROM tasks ORDER BY date_added';
-}
-else if($POST['sort_by'] = 'is_done'){
-	$sql_full = 'SELECT id, description, is_done, date_added FROM tasks ORDER BY is_done';
-}
-else if($POST['sort_by'] = 'description'){
-	$sql_full = 'SELECT id, description, is_done, date_added FROM tasks ORDER BY description';
+	$pdo->query('UPDATE tasks SET is_done="1" WHERE id='.'"'.strip_tags($_GET['id']).'"');
 }
 
 function getTable($row){
@@ -36,10 +27,6 @@ function getTable($row){
 		return '<tr>'.'<td>'.$row['description'].'</td>'.'<td>'.$row['date_added'].'</td>'.'<td id="center">'.$task_status.'</td>'.'<td>'.'<a href=?id='.$row['id'].'&action=edit>Изменить</a>'.' '.'<a href=?id='.$row['id'].'&action=done>Выполнить</a>'.' '.'<a href=?id='.$row['id'].'&action=delete>Удалить</a>'.'</td>'.'</tr>';
 	}
 }
-
-function getDescription(){
-}
-
 ?>
 <html> 
 <head>
@@ -69,7 +56,7 @@ function getDescription(){
 				echo '';
 			}
 			else{
-				foreach ($pdo->query('SELECT * FROM tasks WHERE id='.'"'.$_GET['id'].'"') as $row) {
+				foreach ($pdo->query('SELECT * FROM tasks WHERE id='.'"'.strip_tags($_GET['id']).'"') as $row) {
 					echo strip_tags($row['description']);
 				}
 			}
@@ -82,9 +69,23 @@ function getDescription(){
     <form method="POST">
         <label for="sort">Сортировать по:</label>
         <select name="sort_by">
-            <option value="date_created">Дате добавления</option>
-            <option value="is_done">Статусу</option>
-            <option value="description">Описанию</option>
+			<?php
+				if(empty($_POST['sort_by']) or $_POST['sort_by'] == 'date_created'){
+					echo '<option selected value="date_created">Дате добавления</option>
+					<option value="is_done">Статусу</option>
+					<option value="description">Описанию</option>';
+				}
+				else if($_POST['sort_by'] == 'is_done'){
+					echo'<option value="date_created">Дате добавления</option>
+					<option selected value="is_done">Статусу</option>
+					<option value="description">Описанию</option>';
+				}
+				else if($_POST['sort_by'] == 'description'){
+					echo '<option value="date_created">Дате добавления</option>
+					<option value="is_done">Статусу</option>
+					<option selected value="description">Описанию</option>';
+				}
+			?>
         </select>
         <input type="submit" name="sort" value="Отсортировать" />
     </form>
@@ -98,7 +99,7 @@ if(!empty($_POST['description'])){
 		$sql_insert->bindParam(':time_now', $time_now);
 		$sql_insert->bindParam(':is_done', $done);
 
-		$task_desctiption = strval($_POST['description']);
+		$task_desctiption = strip_tags($_POST['description']);
 		$time_now = $time;
 		$done = '0';
 		$inserted = $sql_insert->execute();
@@ -114,8 +115,8 @@ if(!empty($_POST['description'])){
 		$sql_insert->bindParam(':time_now', $time_now);
 		$sql_insert->bindParam(':is_done', $done);
 		
-		$task_id = $_GET['id'];
-		$task_desctiption = strval($_POST['description']);
+		$task_id = strip_tags($_GET['id']);
+		$task_desctiption = strip_tags($_POST['description']);
 		$time_now = $time;
 		$done = '0';
 		$inserted = $sql_insert->execute();
@@ -132,9 +133,32 @@ if(!empty($_POST['description'])){
         <th></th>
     </tr>
 <?php
-foreach ($pdo->query($sql_full) as $row) {
-	echo getTable($row);
+if(!empty($_POST['sort_by'])){
+	if($_POST['sort_by'] == 'date_created'){
+		$sql = 'SELECT * FROM tasks ORDER BY date_added';
+	}
+	else if($_POST['sort_by'] == 'description'){
+		$sql = 'SELECT * FROM tasks ORDER BY description';
+	}
+	else if($_POST['sort_by'] == 'is_done'){
+		$sql = 'SELECT * FROM tasks ORDER BY is_done';
+	}
+	
+	$stmt = $pdo->prepare($sql);
+	$stmt->execute();
+	$data = $stmt->fetchAll();
+	
+	foreach ($data as $row) {
+		echo getTable($row);
+	}
 }
+else{
+	$sql = 'SELECT * FROM tasks ORDER BY date_added';
+	foreach ($pdo->query($sql) as $row) {
+		echo getTable($row);
+	}	
+}
+
 ?>
 </table>
 </body> 
