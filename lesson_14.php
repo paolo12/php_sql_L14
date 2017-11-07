@@ -7,10 +7,18 @@ if(empty($_GET['action'])){
 	
 }
 else if($_GET['action'] == 'delete'){
-	$pdo->query('DELETE FROM tasks WHERE id='.'"'.strip_tags($_GET['id']).'"');
+	$sql = 'DELETE FROM tasks WHERE id = :task_id';
+	$stmt = $pdo->prepare($sql);
+	$stmt->bindParam(':task_id', $_GET['id'], PDO::PARAM_INT);
+	$stmt->execute();
 }
 else if($_GET['action'] == 'done'){
-	$pdo->query('UPDATE tasks SET is_done="1" WHERE id='.'"'.strip_tags($_GET['id']).'"');
+	$sql = 'UPDATE tasks SET is_done= :task_done WHERE id= :task_id';
+	$task_done = 1;
+	$stmt = $pdo->prepare($sql);
+	$stmt->bindParam(':task_done', $task_done);
+	$stmt->bindParam(':task_id', $_GET['id'], PDO::PARAM_INT);	
+	$stmt->execute();
 }
 
 function getTable($row){
@@ -31,7 +39,7 @@ function getTable($row){
 <html> 
 <head>
 <style>
-    table { 
+    table {
         border-spacing: 0;
         border-collapse: collapse;
     }
@@ -56,16 +64,22 @@ function getTable($row){
 				echo '';
 			}
 			else{
-				foreach ($pdo->query('SELECT * FROM tasks WHERE id='.'"'.strip_tags($_GET['id']).'"') as $row) {
+				$sql = 'SELECT * FROM tasks WHERE id= :task_id';
+				$stmt = $pdo->prepare($sql);
+				$stmt->bindParam(':task_id', $_GET['id'], PDO::PARAM_INT);
+				$stmt->execute();
+				$result = $stmt->fetchAll();
+
+				foreach ($result as $row) {
 					echo strip_tags($row['description']);
 				}
 			}
 			?>" />
-        <input type="submit" name="save" value="<?php if(empty($_GET['action']) or $_GET['action'] != 'edit'){ echo 'Добавить';} else{echo 'Сохранить';}?>" />
+        <input type="submit" name="save" value="<?php if(empty($_GET['action']) or $_GET['action'] != 'edit'){echo 'Добавить';} else{echo 'Сохранить';}?>" />
     </form>
 </div>
 
-<div style="float: left; margin-left: 20px;">
+<div style="float: left;margin-left: 20px;">
     <form method="GET">
         <label for="sort">Сортировать по:</label>
         <select name="sort_by">
@@ -158,7 +172,6 @@ else{
 		echo getTable($row);
 	}	
 }
-
 ?>
 </table>
 </body> 
